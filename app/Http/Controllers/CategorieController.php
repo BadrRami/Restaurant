@@ -12,17 +12,20 @@ class CategorieController extends Controller
      */
     public function index()
     {
-        $categories = Categorie::all();
-        return Inertia('visiteur/Menu', [
-            'categories' => $categories
+        $categories = Categorie::with('plats')->get();
+
+        return Inertia::render('visiteur/Menu', [
+            'categories' => $categories,
         ]);
     }
 
     public function plats(Categorie $categorie){
         $plats = $categorie->plats;
-        return Inertia('Categories/Plats', [
+        $comandes = $plats->flatMap->commandes;
+        return Inertia::render('visiteur/Plats', [
             'plats' => $plats,
-            'categorie' => $categorie
+            'categorie' => $categorie,
+            'commandes' => $comandes
         ]);
     }
 }

@@ -29,7 +29,7 @@ const Menu = ({ categories = [], plats = [] }) => {
                                         href={`/plats/${category.id}`}
                                         className="btn btn-primary"
                                     >
-                                        Voir les {plats.length} plats
+                                        Voir les {category.plats?.length || 0} plats
                                     </a>
                                 </div>
 

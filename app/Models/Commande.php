@@ -16,16 +16,14 @@ class Commande extends Model
     public function serveur(){
         return $this->belongsTo(Serveur::class );
     }
-
-    protected  function montantTotal ():Attribute{
+    
+    protected function total():Attribute{
         return Attribute::make(
             get:function(){
                 return $this->plats->sum(function($plt){
-                            return $plt->prix * $plt->pivot->nombre;
-                    }     
-            );
+                    return $plt->prix * $plt->pivot->nombre;
+                });
             }
         );
-    
-    } //montant_total
+    }
 }
