@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('commandes', function (Blueprint $table) {
             $table->id();
-            $table->string('titre');
-            $table->string('photo')->nullable();
+          $table->foreignId('serveur_id')->constrained()->onDelete('cascade');
+            $table->string('numero_table')->nullable();
+            $table->enum('etat', ['en cours', 'terminé', 'servi', 'emporté'])->default('en cours');
+            $table->boolean('paye')->default(false);
             $table->timestamps();
         });
     }
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('commandes');
     }
 };

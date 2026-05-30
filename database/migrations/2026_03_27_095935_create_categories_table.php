@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('serveurs', function (Blueprint $table) {
+        Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->date('date_embauche');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+              $table->string('titre');
+            $table->string('photo')->nullable();
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('serveurs');
+        Schema::dropIfExists('categories');
     }
 };

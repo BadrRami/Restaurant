@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('commandes', function (Blueprint $table) {
+        Schema::create('commande_plat', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('serveur_id')->constrained()->onDelete('cascade');
-            $table->enum('etat', ['en cours', 'terminée', 'annulée'])->default('en cours');
-            $table->boolean('payee')->default(false);
+                $table->foreignId('commande_id')->constrained()->onDelete('cascade');
+            $table->foreignId('plat_id')->constrained()->onDelete('cascade');
+            $table->integer('nombre')->min(1);
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('commandes');
+        Schema::dropIfExists('_commande_plat');
     }
 };

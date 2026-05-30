@@ -48,41 +48,36 @@ class DatabaseSeeder extends Seeder
         }
 
         // Créer des catégories
-     Categorie::create([
-            'titre' =>  'Entrées froide',
-            'photo' => "categories/entree_froide.jpeg",
-        ]);
-        Categorie::create([
-            'titre' =>   'Entrées chaude',
-            'photo' => "categories/entree_chaude.jpeg",
-        ]);
-        Categorie::create([
-            'titre' =>   'Desserts',
-            'photo' => "categories/dessert.jpeg",
-        ]);
-        Categorie::create([
-            'titre' =>   'Pizzas',
-            'photo' => "categories/pizza.jpg",
-        ]);
-        Categorie::create([
-            'titre' =>   'Plats Principaux',
-            'photo' => "categories/tajine.jpeg",
-        ]);
+        $categories = [
+            ['titre' => 'Entrées'],
+            ['titre' => 'Plats Principaux'],
+            ['titre' => 'Desserts'],
+            ['titre' => 'Boissons'],
+            ['titre' => 'Salades'],
+            ['titre' => 'Pizzas'],
+        ];
+
+        foreach ($categories as $catData) {
+            Categorie::create($catData);
+        }
 
         // Créer des plats
         $platsData = [
-            ['categorie' => 'Entrées chaude', 'intitule' => 'Harira', 'description' => 'Soupe traditionnelle marocaine', 'prix' => 25],
-            ['categorie' => 'Entrées chaude', 'intitule' => 'Briouates', 'description' => 'Feuilletés au fromage', 'prix' => 30],
+            ['categorie' => 'Entrées', 'intitule' => 'Harira', 'description' => 'Soupe traditionnelle marocaine', 'prix' => 25],
+            ['categorie' => 'Entrées', 'intitule' => 'Briouates', 'description' => 'Feuilletés au fromage', 'prix' => 30],
             ['categorie' => 'Plats Principaux', 'intitule' => 'Tajine', 'description' => 'Tajine de poulet aux olives', 'prix' => 85],
             ['categorie' => 'Plats Principaux', 'intitule' => 'Couscous', 'description' => 'Couscous traditionnel', 'prix' => 90],
             ['categorie' => 'Plats Principaux', 'intitule' => 'Pastilla', 'description' => 'Pastilla au poulet', 'prix' => 95],
             ['categorie' => 'Pizzas', 'intitule' => 'Pizza Margherita', 'description' => 'Sauce tomate, mozzarella', 'prix' => 65],
             ['categorie' => 'Pizzas', 'intitule' => 'Pizza 4 Fromages', 'description' => '4 fromages fondants', 'prix' => 75],
-            ['categorie' => 'Entrées froide', 'intitule' => 'Salade Marocaine', 'description' => 'Tomates, oignons, concombre', 'prix' => 35],
-            ['categorie' => 'Entrées froide', 'intitule' => 'Salade César', 'description' => 'Poulet, parmesan, croûtons', 'prix' => 55],
+            ['categorie' => 'Salades', 'intitule' => 'Salade Marocaine', 'description' => 'Tomates, oignons, concombre', 'prix' => 35],
+            ['categorie' => 'Salades', 'intitule' => 'Salade César', 'description' => 'Poulet, parmesan, croûtons', 'prix' => 55],
             ['categorie' => 'Desserts', 'intitule' => 'Tiramisu', 'description' => 'Dessert italien', 'prix' => 40],
             ['categorie' => 'Desserts', 'intitule' => 'Corne de Gazelle', 'description' => 'Pâtisserie marocaine', 'prix' => 25],
-           ];
+            ['categorie' => 'Boissons', 'intitule' => 'Jus d\'orange', 'description' => 'Jus frais', 'prix' => 20],
+            ['categorie' => 'Boissons', 'intitule' => 'Café', 'description' => 'Café expresso', 'prix' => 15],
+            ['categorie' => 'Boissons', 'intitule' => 'Thé à la menthe', 'description' => 'Thé marocain', 'prix' => 18],
+        ];
 
         foreach ($platsData as $platData) {
             $categorie = Categorie::where('titre', $platData['categorie'])->first();

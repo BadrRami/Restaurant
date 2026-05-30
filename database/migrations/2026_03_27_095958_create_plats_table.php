@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('composants', function (Blueprint $table) {
+        Schema::create('plats', function (Blueprint $table) {
             $table->id();
-            $table->string('libelle');
+               $table->foreignId('categorie_id')->constrained()->onDelete('cascade');
+            $table->string('intitule');
+            $table->text('description');
+            $table->decimal('prix', 8, 2);
+            $table->string('photo')->nullable();
             $table->timestamps();
         });
     }
@@ -23,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('composants');
+        Schema::dropIfExists('plats');
     }
 };
