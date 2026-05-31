@@ -7,59 +7,64 @@ use Illuminate\Http\Request;
 
 class CommandesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function creer()
     {
-        //
-    }
+        $nouvelleCommande = [
+            'user_id' => auth()->id(),
+            'etat' => 'en cours',
+            'paye' => false,
+        ];
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        session()->put('commande', $nouvelleCommande);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+        return back();
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(commandes $commandes)
+    public function add_plat(Request $request)
     {
-        //
+        $commande = session('commande');
+
+        if (!$commande) {
+            return response()->json(['message' => 'Aucune commande en cours'], 400);
+        }
+
+        if (!isset($commande['plats'])) {
+            $commande['plats'] = [];
+        }
+
+        $platId = $request->input('plat_id');
+        $nombre = $request->input('nombre', 1);
+
+        // vérifier si plat existe déjà
+        foreach ($commande['plats'] as &$plat) {
+            if ($plat['plat_id'] == $platId) {
+                $plat['nombre'] += $nombre;
+                session()->put('commande', $commande);
+                return back();
+            }
+        }
+
+        // sinon ajouter nouveau plat
+        $commande['plats'][] = [
+            'plat_id' => $platId,
+            'nombre' => $nombre
+        ];
+
+        session()->put('commande', $commande);
+
+        return back();
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(commandes $commandes)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, commandes $commandes)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(commandes $commandes)
-    {
-        //
+    public function terminer (Commande $commande=null){
+        if($commande == null && session()->has('commande')){
+            $commande = session()->get('commande');
+            session()->forget("commande");
+        }elseif ($commande) {
+            if (empty($commande->plats) || count($commande->plats) == 0) {
+                $commande->delete();
+            } else {
+                $commande->etat = "terminé";
+                $commande->save();
+            }
+         }
+        return back();
     }
 }
