@@ -1,179 +1,135 @@
-import React from 'react';
-import { router } from '@inertiajs/react';
+// resources/js/Pages/serveur/Dashboard.jsx
+import ServeurLayout from './ServeurLayout';
+import { Link, router, useForm } from '@inertiajs/react';
 
-const Dashboard = ({ user, categories, plats }) => {
+function PlatCard({ plat, commande }) {
+    const dejaDansCommande = commande?.plats?.some(p => p.id === plat.id) ?? false;
 
-    const [nouvellecommande, setNouvelleCommande] = React.useState(false);
-    const [commande, setCommande] = React.useState(null);
+    const { data, setData, post, processing } = useForm({
+        plat_id: plat.id,
+        nombre: 1,
+    });
 
-    // quantité par plat
-    const [quantites, setQuantites] = React.useState({});
-
-    // plats déjà ajoutés (pour cacher formulaire)
-    const [platsAjoutes, setPlatsAjoutes] = React.useState([]);
-
-    // =========================
-    // CREER UNE COMMANDE
-    // =========================
-    const nouvelleCommande = () => {
-
-        const data = {
-            serveur_id: user.id,
-            etat: "en cours",
-            paye: false
-        };
-
-        setNouvelleCommande(true);
-        setCommande(data);
-
-        router.post('/serveur/commande', data, {
-            onSuccess: (page) => {
-                // si Laravel retourne la commande créée
-                setCommande(page.props.commande);
-            }
-        });
-    };
-
-    // =========================
-    // CHANGE QUANTITE PAR PLAT
-    // =========================
-    const handleQuantiteChange = (platId, value) => {
-        setQuantites(prev => ({
-            ...prev,
-            [platId]: value
-        }));
-    };
-
-    // =========================
-    // AJOUTER UN PLAT A LA COMMANDE
-    // =========================
-    const handleAddPlat = (platId) => {
-
-        const commandePlat = {
-            commande_id: commande?.id,
-            plat_id: platId,
-            nombre: quantites[platId] || 1
-        };
-
-        router.post('/serveur/plat/add', commandePlat);
-
-        // cacher uniquement ce formulaire
-        setPlatsAjoutes(prev => [...prev, platId]);
-    };
-
-    const handleTerminerCommande = () => {
-    if (!commande?.id) return;
-
-    router.get(`/serveur/commande/terminer/${commande.id}`);
-    setNouvelleCommande(false);
-    setPlatsAjoutes([]);
-};
-const handleCommandeClick = () => {
-    if (!nouvellecommande) {
-        nouvelleCommande();
-    } else {
-        handleTerminerCommande();
+    function handleSubmit(e) {
+        e.preventDefault();
+        post(route('serveur.commande.add_plat'));
     }
-};
+
     return (
-        <div>
-
-            {/* NAVBAR */}
-            <nav className="navbar navbar-expand-lg bg-light">
-                <h5>serveur: {user.name}</h5>
-
-                <ul className="navbar-nav">
-                    <li className="nav-item">
-                        <a className="nav-link" href="/menu">Dashboard</a>
-                    </li>
-                    <li className="nav-item">
-                        <a className="nav-link" href="/orders">Commandes</a>
-                    </li>
-                </ul>
-
-                <div>
-                    {nouvellecommande && (
-                        <p className="text-success">Commande en cours</p>
-                    )}
-
-                    <button className="btn btn-primary" onClick={handleCommandeClick}>
-                        {nouvellecommande ? "Terminer" : "Nouvelle Commande"}
-                        ({platsAjoutes.length})
-                    </button>
-                     {nouvellecommande &&
-    <a
-        className="btn btn-sm btn-success ms-2"
-        href={route('serveur.commande.show')}
-    >
-        Editer
-    </a>
-}
+        <div style={{
+            border: '1px solid #e5e7eb', borderRadius: '8px',
+            overflow: 'hidden', background: '#fff', textAlign: 'center',
+        }}>
+            {/* Photo */}
+            {plat.photo ? (
+                <img
+                    src={`/storage/${plat.photo}`}
+                    alt={plat.intitulé}
+                    style={{ width: '100%', height: '120px', objectFit: 'cover' }}
+                />
+            ) : (
+                <div style={{
+                    width: '100%', height: '120px', background: '#f3f4f6',
+                    display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center',
+                    fontSize: '11px', color: '#9ca3af',
+                }}>
+                    NO IMAGE<br />AVAILABLE
                 </div>
-            </nav>
+            )}
 
-            {/* CATEGORIES */}
-            <div className="container mt-4 d-flex flex-wrap gap-3">
-                {categories?.map((categorie) => (
-                    <a
-                        key={categorie.id}
-                        href={`/dashboard/${categorie.id}`}
-                        className="btn btn-outline-primary"
-                    >
-                        {categorie.titre}
-                    </a>
-                ))}
-            </div>
+            <div style={{ padding: '8px' }}>
+                <p style={{ fontWeight: '500', fontSize: '13px', marginBottom: '2px' }}>{plat.intitulé}</p>
+                <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '6px' }}>
+                    {parseFloat(plat.prix).toFixed(2)}
+                </p>
 
-            {/* PLATS */}
-            <div className="container mt-4 d-flex flex-wrap gap-3">
-
-                {plats?.map((plat) => (
-                    <div key={plat.id} className="card p-3" style={{ width: "250px" }}>
-
-                        <h4>{plat.intitule}</h4>
-                        <p>{plat.description}</p>
-                        <p><strong>{plat.prix} €</strong></p>
-
-                        {/* FORMULAIRE */}
-                        {nouvellecommande && !platsAjoutes.includes(plat.id) && (
-                            <form
-                                onSubmit={(e) => {
-                                    e.preventDefault();
-                                    handleAddPlat(plat.id);
-                                }}
-                            >
-                                <input
-                                    type="number"
-                                    className="form-control mb-2"
-                                    placeholder="Quantité"
-                                    value={quantites[plat.id] || 1}
-                                    onChange={(e) =>
-                                        handleQuantiteChange(
-                                            plat.id,
-                                            parseInt(e.target.value)
-                                        )
-                                    }
-                                />
-
-                                <button className="btn btn-success w-100">
-                                    Ajouter
-                                </button>
-                            </form>
-                        )}
-
-                        {/* MESSAGE SI AJOUTÉ */}
-                        {platsAjoutes.includes(plat.id) && (
-                            <p className="text-success mt-2">
-                                ✔ Ajouté à la commande
-                            </p>
-                        )}
-
-                    </div>
-                ))}
-
+                {/* Formulaire d'ajout : affiché seulement si commande active et plat pas encore ajouté */}
+                {commande && !dejaDansCommande && (
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                        <input
+                            type="number"
+                            min="1"
+                            value={data.nombre}
+                            onChange={e => setData('nombre', e.target.value)}
+                            style={{
+                                width: '55px', padding: '3px 6px',
+                                border: '1px solid #d1d5db', borderRadius: '4px',
+                                fontSize: '13px',
+                            }}
+                        />
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            style={{
+                                width: '30px', height: '30px',
+                                background: '#3b82f6', color: '#fff',
+                                border: 'none', borderRadius: '50%',
+                                cursor: 'pointer', fontSize: '16px',
+                                lineHeight: '1',
+                            }}
+                            title="Ajouter"
+                        >
+                            +
+                        </button>
+                    </form>
+                )}
             </div>
         </div>
     );
-};
+}
 
-export default Dashboard;
+export default function Dashboard({ categories, plats, categorieActive, commande }) {
+    return (
+        <ServeurLayout commande={commande}>
+            {/* Barre des catégories */}
+            <div style={{
+                display: 'flex', gap: '20px', flexWrap: 'wrap',
+                justifyContent: 'center', marginBottom: '24px',
+            }}>
+                {categories.map((cat) => (
+                    <Link
+                        key={cat.id}
+                        href={route('dashboard.categorie.show', { categorie: cat.id })}
+                        style={{ textAlign: 'center', textDecoration: 'none', color: '#111' }}
+                    >
+                        {cat.photo ? (
+                            <img
+                                src={`/storage/${cat.photo}`}
+                                alt={cat.titre}
+                                style={{
+                                    width: '60px', height: '60px',
+                                    objectFit: 'cover', borderRadius: '50%',
+                                    border: categorieActive?.id === cat.id ? '3px solid #3b82f6' : '3px solid transparent',
+                                }}
+                            />
+                        ) : (
+                            <div style={{
+                                width: '60px', height: '60px', borderRadius: '50%',
+                                background: '#e5e7eb', display: 'flex',
+                                alignItems: 'center', justifyContent: 'center',
+                                fontSize: '10px', color: '#9ca3af',
+                            }}>
+                                N/A
+                            </div>
+                        )}
+                        <p style={{ fontSize: '12px', marginTop: '4px' }}>{cat.titre}</p>
+                    </Link>
+                ))}
+            </div>
+
+            {/* Grille des plats */}
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+                gap: '16px',
+                maxWidth: '1100px',
+                margin: '0 auto',
+            }}>
+                {plats.map((plat) => (
+                    <PlatCard key={plat.id} plat={plat} commande={commande} />
+                ))}
+            </div>
+        </ServeurLayout>
+    );
+}

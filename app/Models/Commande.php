@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Commande extends Model
 {
+    protected $fillable = ['serveur_id',  'etat', 'paye'];
 
    public function plats(){
         return $this->belongsToMany(Plat::class )

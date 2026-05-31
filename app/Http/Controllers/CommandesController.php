@@ -7,8 +7,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use App\Models\Commande;
 use Inertia\Inertia;
+use App\Models\Plat;
 class CommandesController extends Controller
 {
+    public function index(){
+        $commandes = Commande::with('plats')->get();
+        return inertia("Index", [
+            "commandes" => $commandes
+        ]);
+    }
     public function creer()
     {
         $nouvelleCommande = [
@@ -69,9 +76,76 @@ class CommandesController extends Controller
          }
         return back();
     }
-    public function show(){
-        $commande = session()->get('commande');
-        $plats = $commande ? $commande['plats'] : [];
-        return inertia("Edit", ['commande' => $commande, 'plats' => $plats]);
+    public function show()
+{
+    $commande = session()->get('commande');
+
+    if (!$commande || empty($commande['plats'])) {
+        return inertia("Edit", [
+            "commande" => $commande,
+            "plats" => [],
+            "total" => 0
+        ]);
     }
+
+    $ids = collect($commande['plats'])->pluck('plat_id');
+
+    $plats = Plat::whereIn('id', $ids)->get();
+
+    $total = 0;
+
+    foreach ($commande['plats'] as $item) {
+        $plat = $plats->firstWhere('id', $item['plat_id']);
+        if ($plat) {
+            $total += $plat->prix * $item['nombre'];
+        }
+    }
+
+    return inertia("Edit", [
+        "commande" => $commande,
+        "plats" => $plats,
+        "total" => $total
+    ]);
+}
+
+public function update_plats(Request $request)
+{
+    $commande = session('commande');
+
+    if (!$commande || empty($commande['plats'])) {
+        return back();
+    }
+
+    $quantites = $request->input('quantites', []);
+
+    foreach ($commande['plats'] as &$item) {
+        if (isset($quantites[$item['plat_id']])) {
+            $item['nombre'] = $quantites[$item['plat_id']];
+        }
+    }
+
+    session()->put('commande', $commande);
+
+    return back();
+}
+
+
+public function delete_plats(Request $request)
+{
+    $commande = session('commande');
+
+    if (!$commande || empty($commande['plats'])) {
+        return back();
+    }
+
+    $ids = $request->input('ids', []);
+
+    $commande['plats'] = array_filter($commande['plats'], function ($item) use ($ids) {
+        return !in_array($item['plat_id'], $ids);
+    });
+
+    session()->put('commande', $commande);
+
+    return back();
+}
 }

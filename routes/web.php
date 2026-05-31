@@ -1,42 +1,57 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
+use App\Http\Controllers\visiteur\CategorieController;
+use App\Http\Controllers\serveur\DashboardController;
+use App\Http\Controllers\serveur\CommandeController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CategorieController;
-use App\Http\Controllers\Login;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\CommandesController;
-use Inertia\Inertia;
 
-// Route::get('/', function () {
-//     return Inertia::render('Welcome', [
-//         'canLogin' => Route::has('login'),
-//         'canRegister' => Route::has('register'),
-//         'laravelVersion' => Application::VERSION,
-//         'phpVersion' => PHP_VERSION,
-//     ]);
-// });
+/*
+|--------------------------------------------------------------------------
+| Routes Visiteurs (pas d'authentification requise)
+|--------------------------------------------------------------------------
+*/
 
-// Route::get('/dashboard', function () {
-//     return Inertia::render('Dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
-
-// Route::middleware('auth')->group(function () {
-//     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-//     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-//     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-// });
 Route::get('/menu', [CategorieController::class, 'index'])->name('menu');
-Route::get('/plats/{categorie}', [CategorieController::class, 'plats'])->name('menu.categorie');
-Route::get('/login', [Login::class, 'index'])->name('login');
-Route::post('/login', [Login::class, 'authenticate'])->name('login.authenticate');
-Route::post('/logout', [Login::class, 'logout'])->name('logout');
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('/dashboard/{categorie}', [DashboardController::class, 'show'])->name('dashboard.categorie');
+Route::get('/plats/{categorie}', [CategorieController::class, 'plats'])->name('plats_categorie');
 
-Route::post('/serveur/commande', [CommandesController::class, 'creer'])->name('serveur.commande.creer');
-Route::post('/serveur/plat/add', [CommandesController::class, 'add_plat'])->name('serveur.commande.add_plat');
-Route::get('serveur/commande/terminer/{commande} ', [CommandesController::class, 'terminer'])->name('serveur.commande.terminer');
-Route::get('serveur/commande/', [CommandesController::class, 'show'])->name('serveur.commande.show');
-// require __DIR__.'/auth.php';
+/*
+|--------------------------------------------------------------------------
+| Routes Serveur (protégées par middleware auth)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->group(function () {
+
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/categorie/{categorie}', [DashboardController::class, 'show'])->name('dashboard.categorie.show');
+
+    // Commandes CRUD (resource)
+    Route::resource('seveur/commande', CommandeController::class)->names('serveur.commande');
+
+    // Routes supplémentaires pour CommandeController
+    Route::get('/serveur/commande/creer', [CommandeController::class, 'creer'])
+        ->name('serveur.commande.creer');
+
+    Route::get('/serveur/commande/terminer/{commande?}', [CommandeController::class, 'terminer'])
+        ->name('commande.terminer');
+
+    Route::post('/serveur/plat/add', [CommandeController::class, 'add_plat'])
+        ->name('serveur.commande.add_plat');
+
+    Route::get('/serveur/commande/{commande}/{etat}', [CommandeController::class, 'changerEtat'])
+        ->name('serveur.commande.changer_etat');
+});
+Route::middleware('guest')->group(function () {
+    Route::get('login', [AuthenticatedSessionController::class, 'create'])
+        ->name('login');
+ 
+    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+});
+ 
+// Déconnexion (accessible aux utilisateurs connectés)
+Route::middleware('auth')->group(function () {
+    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
+        ->name('logout');
+});
