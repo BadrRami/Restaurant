@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\commandes;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Session;
+use App\Models\Commande;
+use Inertia\Inertia;
 class CommandesController extends Controller
 {
     public function creer()
@@ -53,7 +55,7 @@ class CommandesController extends Controller
 
         return back();
     }
-    public function terminer (Commande $commande=null){
+    public function terminer (commandes $commande=null){
         if($commande == null && session()->has('commande')){
             $commande = session()->get('commande');
             session()->forget("commande");
@@ -66,5 +68,10 @@ class CommandesController extends Controller
             }
          }
         return back();
+    }
+    public function show(){
+        $commande = session()->get('commande');
+        $plats = $commande ? $commande['plats'] : [];
+        return inertia("Edit", ['commande' => $commande, 'plats' => $plats]);
     }
 }

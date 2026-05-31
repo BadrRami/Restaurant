@@ -62,11 +62,19 @@ const Dashboard = ({ user, categories, plats }) => {
     };
 
     const handleTerminerCommande = () => {
-        router.get(`/serveur/commande/terminer/${commande.id}`);
-        setNouvelleCommande(false);
-        setPlatsAjoutes([]);
-    }
+    if (!commande?.id) return;
 
+    router.get(`/serveur/commande/terminer/${commande.id}`);
+    setNouvelleCommande(false);
+    setPlatsAjoutes([]);
+};
+const handleCommandeClick = () => {
+    if (!nouvellecommande) {
+        nouvelleCommande();
+    } else {
+        handleTerminerCommande();
+    }
+};
     return (
         <div>
 
@@ -88,15 +96,18 @@ const Dashboard = ({ user, categories, plats }) => {
                         <p className="text-success">Commande en cours</p>
                     )}
 
-                    <button className="btn btn-primary" onClick={nouvelleCommande}>
+                    <button className="btn btn-primary" onClick={handleCommandeClick}>
                         {nouvellecommande ? "Terminer" : "Nouvelle Commande"}
                         ({platsAjoutes.length})
                     </button>
                      {nouvellecommande &&
-                        <button className="btn btn-sm btn-success ms-2">
-                            Editer
-                        </button>
-                        }
+    <a
+        className="btn btn-sm btn-success ms-2"
+        href={route('serveur.commande.show')}
+    >
+        Editer
+    </a>
+}
                 </div>
             </nav>
 

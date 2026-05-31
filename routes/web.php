@@ -38,4 +38,5 @@ Route::get('/dashboard/{categorie}', [DashboardController::class, 'show'])->name
 Route::post('/serveur/commande', [CommandesController::class, 'creer'])->name('serveur.commande.creer');
 Route::post('/serveur/plat/add', [CommandesController::class, 'add_plat'])->name('serveur.commande.add_plat');
 Route::get('serveur/commande/terminer/{commande} ', [CommandesController::class, 'terminer'])->name('serveur.commande.terminer');
+Route::get('serveur/commande/', [CommandesController::class, 'show'])->name('serveur.commande.show');
 // require __DIR__.'/auth.php';
